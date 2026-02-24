@@ -15,7 +15,7 @@ public class Main {
         if (name.isEmpty()) name = "Eroe";
 
         String classe = "";
-        int maxHp = 0, hp = 0, att = 0, def = 0;
+        int maxEnergia = 0, energia = 0, att = 0, def = 0;
 
         while (true) {
             System.out.println("\nScegli la classe:");
@@ -26,15 +26,15 @@ public class Main {
             switch (scelta) {
                 case "1":
                     classe = "Guerriero";
-                    maxHp = 120; att = 18; def = 12;
+                    maxEnergia = 120; att = 18; def = 12;
                     break;
                 case "2":
                     classe = "Mago";
-                    maxHp = 80; att = 6; def = 6;
+                    maxEnergia = 80; att = 6; def = 6;
                     break;
                 case "3":
                     classe = "Ladro";
-                    maxHp = 100; att = 12; def = 8;
+                    maxEnergia = 100; att = 12; def = 8;
                     break;
                 default:
                     System.out.println("Scelta non valida, riprova.");
@@ -46,12 +46,12 @@ public class Main {
         inizializzaInventario(classe);
         ordinaInventario();
 
-        hp = maxHp;
+        energia = maxEnergia;
 
         System.out.println("\n===== STATISTICHE =====");
         System.out.println("Nome: " + name);
         System.out.println("Classe: " + classe);
-        System.out.println("HP: " + hp + " / " + maxHp);
+        System.out.println("Energia: " + energia + " / " + maxEnergia);
 
         System.out.println("\n===== INVENTARIO =====");
         for (String oggetto : inventario) {
@@ -59,7 +59,7 @@ public class Main {
                 System.out.println("- " + oggetto);
         }
 
-        combattiNemico(name, hp, att, def);
+        combattiNemico(name, energia, att, def);
 
         in.close();
     }
@@ -70,7 +70,7 @@ public class Main {
             inventario[0] = "Spada";
             inventario[1] = "Scudo";
             inventario[2] = "Pozione 10";
-            inventario[3] = null;   // slot vuoto
+            inventario[3] = null;
         }
         else if (classe.equals("Mago")) {
             inventario[0] = "Bastone magico";
@@ -128,36 +128,37 @@ public class Main {
         }
     }
 
-    public static void combattiNemico(String name, int hp, int att, int def) {
+    public static void combattiNemico(String name, int energia, int att, int def) {
 
         int[] statsNemico = new int[2];
         String nomeNemico = generaNemico(statsNemico);
 
-        int hpNemico = statsNemico[0];
+        int energiaNemico = statsNemico[0];
         int attNemico = statsNemico[1];
 
         System.out.println("\nÈ apparso un " + nomeNemico + "!");
-        System.out.println(nomeNemico + " HP: " + hpNemico);
+        System.out.println(nomeNemico + " Energia: " + energiaNemico);
 
-        while (hp > 0 && hpNemico > 0) {
+        while (energia > 0 && energiaNemico > 0) {
 
             int danno = att + rand.nextInt(6);
-            hpNemico -= danno;
+            energiaNemico -= danno;
 
             System.out.println(name + " infligge " + danno + " danni!");
 
-            if (hpNemico <= 0) break;
+            if (energiaNemico <= 0) break;
 
             int dannoNemico = attNemico + rand.nextInt(6) - def / 2;
             if (dannoNemico < 0) dannoNemico = 0;
 
-            hp -= dannoNemico;
+            energia -= dannoNemico;
 
             System.out.println(nomeNemico + " infligge " + dannoNemico + " danni!");
-            System.out.println("HP tuo: " + hp + " | HP nemico: " + hpNemico);
+            System.out.println("Energia tua: " + energia + 
+                               " | Energia nemico: " + energiaNemico);
         }
 
-        if (hp > 0) {
+        if (energia > 0) {
             System.out.println("\nHai sconfitto il " + nomeNemico + "!");
         } else {
             System.out.println("\nSei stato sconfitto...");
