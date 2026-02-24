@@ -1,9 +1,10 @@
 import java.util.Scanner;
+import java.util.Random;
 
 public class Main {
 
-    // INVENTARIO
     static String[] inventario = new String[4];
+    static Random rand = new Random();
 
     public static void main(String[] args) {
 
@@ -14,32 +15,27 @@ public class Main {
         if (name.isEmpty()) name = "Eroe";
 
         String classe = "";
-        int maxHp = 0, hp = 0, att = 0, def = 0, mag = 0, vel = 0;
-        int energ = 100;
-        int lvl = 1;
+        int maxHp = 0, hp = 0, att = 0, def = 0;
 
         while (true) {
             System.out.println("\nScegli la classe:");
             System.out.println("1) Guerriero   2) Mago   3) Ladro");
             System.out.print("Scelta (1-3): ");
-            String rpg = in.nextLine().trim();
+            String scelta = in.nextLine().trim();
 
-            switch (rpg) {
+            switch (scelta) {
                 case "1":
                     classe = "Guerriero";
-                    maxHp = 120; att = 18; def = 12; mag = 4; vel = 2;
+                    maxHp = 120; att = 18; def = 12;
                     break;
-
                 case "2":
                     classe = "Mago";
-                    maxHp = 80; att = 6; def = 6; mag = 20; vel = 4;
+                    maxHp = 80; att = 6; def = 6;
                     break;
-
                 case "3":
                     classe = "Ladro";
-                    maxHp = 100; att = 12; def = 8; mag = 8; vel = 8;
+                    maxHp = 100; att = 12; def = 8;
                     break;
-
                 default:
                     System.out.println("Scelta non valida, riprova.");
                     continue;
@@ -47,72 +43,124 @@ public class Main {
             break;
         }
 
-        // Inizializzazione inventario
         inizializzaInventario(classe);
-
-        // Ordinamento inventario
         ordinaInventario();
 
         hp = maxHp;
 
-        System.out.println("\n STATISTICHE ");
+        System.out.println("\n===== STATISTICHE =====");
         System.out.println("Nome: " + name);
         System.out.println("Classe: " + classe);
         System.out.println("HP: " + hp + " / " + maxHp);
-        System.out.println("Energia: " + energ);
-        System.out.println("Livello: " + lvl);
-        System.out.println("Attacco: " + att +
-                           "  Difesa: " + def +
-                           "  Magia: " + mag +
-                           "  Velocità: " + vel);
 
-        System.out.println("\n INVENTARIO (ordinato) ");
+        System.out.println("\n===== INVENTARIO =====");
         for (String oggetto : inventario) {
-            System.out.println("- " + oggetto);
+            if (oggetto != null)
+                System.out.println("- " + oggetto);
         }
+
+        combattiNemico(name, hp, att, def);
 
         in.close();
     }
 
-    // 🔹 Metodo per inizializzare inventario
     public static void inizializzaInventario(String classe) {
 
         if (classe.equals("Guerriero")) {
             inventario[0] = "Spada";
             inventario[1] = "Scudo";
             inventario[2] = "Pozione 10";
-            inventario[3] = "Pozione 20";
+            inventario[3] = null;   // slot vuoto
         }
-
         else if (classe.equals("Mago")) {
             inventario[0] = "Bastone magico";
             inventario[1] = "Pergamena";
             inventario[2] = "Pozione 10";
-            inventario[3] = "Pozione 20";
+            inventario[3] = null;
         }
-
         else if (classe.equals("Ladro")) {
             inventario[0] = "Pugnale";
             inventario[1] = "Arco";
             inventario[2] = "Pozione 10";
-            inventario[3] = "Pozione 20";
+            inventario[3] = null;
         }
     }
 
-    // 🔹 Metodo per ordinare inventario
     public static void ordinaInventario() {
 
         for (int i = 0; i < inventario.length - 1; i++) {
             for (int j = i + 1; j < inventario.length; j++) {
 
-                if (inventario[i].compareToIgnoreCase(inventario[j]) > 0) {
+                if (inventario[i] == null && inventario[j] != null) {
+                    String temp = inventario[i];
+                    inventario[i] = inventario[j];
+                    inventario[j] = temp;
+                }
+                else if (inventario[i] != null && inventario[j] != null &&
+                        inventario[i].compareToIgnoreCase(inventario[j]) > 0) {
 
-                    // scambio
                     String temp = inventario[i];
                     inventario[i] = inventario[j];
                     inventario[j] = temp;
                 }
             }
+        }
+    }
+
+    public static String generaNemico(int[] statsNemico) {
+
+        int tipo = rand.nextInt(3);
+
+        if (tipo == 0) {
+            statsNemico[0] = 60;
+            statsNemico[1] = 10;
+            return "Goblin";
+        }
+        else if (tipo == 1) {
+            statsNemico[0] = 80;
+            statsNemico[1] = 14;
+            return "Scheletro";
+        }
+        else {
+            statsNemico[0] = 100;
+            statsNemico[1] = 18;
+            return "Orco";
+        }
+    }
+
+    public static void combattiNemico(String name, int hp, int att, int def) {
+
+        int[] statsNemico = new int[2];
+        String nomeNemico = generaNemico(statsNemico);
+
+        int hpNemico = statsNemico[0];
+        int attNemico = statsNemico[1];
+
+        System.out.println("\nÈ apparso un " + nomeNemico + "!");
+        System.out.println(nomeNemico + " HP: " + hpNemico);
+
+        while (hp > 0 && hpNemico > 0) {
+
+            int danno = att + rand.nextInt(6);
+            hpNemico -= danno;
+
+            System.out.println(name + " infligge " + danno + " danni!");
+
+            if (hpNemico <= 0) break;
+
+            int dannoNemico = attNemico + rand.nextInt(6) - def / 2;
+            if (dannoNemico < 0) dannoNemico = 0;
+
+            hp -= dannoNemico;
+
+            System.out.println(nomeNemico + " infligge " + dannoNemico + " danni!");
+            System.out.println("HP tuo: " + hp + " | HP nemico: " + hpNemico);
+        }
+
+        if (hp > 0) {
+            System.out.println("\nHai sconfitto il " + nomeNemico + "!");
+        } else {
+            System.out.println("\nSei stato sconfitto...");
         }
     }
 }
