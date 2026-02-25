@@ -15,7 +15,7 @@ public class Main {
         if (name.isEmpty()) name = "Eroe";
 
         String classe = "";
-        int maxEnergia = 0, energia = 0, att = 0, def = 0;
+        int maxEnergia = 0, energia = 0, att = 0, def = 0, velocita = 0;
 
         while (true) {
             System.out.println("\nScegli la classe:");
@@ -26,15 +26,24 @@ public class Main {
             switch (scelta) {
                 case "1":
                     classe = "Guerriero";
-                    maxEnergia = 120; att = 18; def = 12;
+                    maxEnergia = 120;
+                    att = 18;
+                    def = 12;
+                    velocita = 25;
                     break;
                 case "2":
                     classe = "Mago";
-                    maxEnergia = 80; att = 6; def = 6;
+                    maxEnergia = 80;
+                    att = 6;
+                    def = 6;
+                    velocita = 30;
                     break;
                 case "3":
                     classe = "Ladro";
-                    maxEnergia = 100; att = 12; def = 8;
+                    maxEnergia = 100;
+                    att = 12;
+                    def = 8;
+                    velocita = 35;
                     break;
                 default:
                     System.out.println("Scelta non valida, riprova.");
@@ -52,6 +61,9 @@ public class Main {
         System.out.println("Nome: " + name);
         System.out.println("Classe: " + classe);
         System.out.println("Energia: " + energia + " / " + maxEnergia);
+        System.out.println("Attacco: " + att);
+        System.out.println("Difesa: " + def);
+        System.out.println("Velocità: " + velocita);
 
         System.out.println("\n===== INVENTARIO =====");
         for (String oggetto : inventario) {
@@ -59,31 +71,34 @@ public class Main {
                 System.out.println("- " + oggetto);
         }
 
-        combattiNemico(name, energia, att, def);
+        combattiNemico(name, energia, att, def, velocita);
 
         in.close();
     }
 
     public static void inizializzaInventario(String classe) {
 
-        if (classe.equals("Guerriero")) {
-            inventario[0] = "Spada";
-            inventario[1] = "Scudo";
-            inventario[2] = "Pozione 10";
-            inventario[3] = null;
+        switch (classe) {
+            case "Guerriero":
+                inventario[0] = "Spada";
+                inventario[1] = "Scudo";
+                inventario[2] = "Pozione 10";
+                break;
+
+            case "Mago":
+                inventario[0] = "Bastone magico";
+                inventario[1] = "Pergamena";
+                inventario[2] = "Pozione 10";
+                break;
+
+            case "Ladro":
+                inventario[0] = "Pugnale";
+                inventario[1] = "Arco";
+                inventario[2] = "Pozione 10";
+                break;
         }
-        else if (classe.equals("Mago")) {
-            inventario[0] = "Bastone magico";
-            inventario[1] = "Pergamena";
-            inventario[2] = "Pozione 10";
-            inventario[3] = null;
-        }
-        else if (classe.equals("Ladro")) {
-            inventario[0] = "Pugnale";
-            inventario[1] = "Arco";
-            inventario[2] = "Pozione 10";
-            inventario[3] = null;
-        }
+
+        inventario[3] = null;
     }
 
     public static void ordinaInventario() {
@@ -111,24 +126,31 @@ public class Main {
 
         int tipo = rand.nextInt(3);
 
-        if (tipo == 0) {
-            statsNemico[0] = 60;
-            statsNemico[1] = 10;
-            return "Goblin";
-        }
-        else if (tipo == 1) {
-            statsNemico[0] = 80;
-            statsNemico[1] = 14;
-            return "Scheletro";
-        }
-        else {
-            statsNemico[0] = 100;
-            statsNemico[1] = 18;
-            return "Orco";
+        switch (tipo) {
+
+            case 0:
+                statsNemico[0] = 60;
+                statsNemico[1] = 10;
+                return "Goblin";
+
+            case 1:
+                statsNemico[0] = 80;
+                statsNemico[1] = 14;
+                return "Scheletro";
+
+            case 2:
+                statsNemico[0] = 100;
+                statsNemico[1] = 18;
+                return "Orco";
+
+            default:
+                statsNemico[0] = 50;
+                statsNemico[1] = 8;
+                return "Creatura misteriosa";
         }
     }
 
-    public static void combattiNemico(String name, int energia, int att, int def) {
+    public static void combattiNemico(String name, int energia, int att, int def, int velocita) {
 
         int[] statsNemico = new int[2];
         String nomeNemico = generaNemico(statsNemico);
@@ -143,18 +165,25 @@ public class Main {
 
             int danno = att + rand.nextInt(6);
             energiaNemico -= danno;
-
             System.out.println(name + " infligge " + danno + " danni!");
 
             if (energiaNemico <= 0) break;
 
-            int dannoNemico = attNemico + rand.nextInt(6) - def / 2;
-            if (dannoNemico < 0) dannoNemico = 0;
+            int schivata = rand.nextInt(100);
 
-            energia -= dannoNemico;
+            if (velocita > schivata) {
+                System.out.println("Hai schivato l'attacco! Il nemico salta il turno!");
+            } else {
 
-            System.out.println(nomeNemico + " infligge " + dannoNemico + " danni!");
-            System.out.println("Energia tua: " + energia + 
+                int dannoNemico = attNemico + rand.nextInt(6) - def / 2;
+                if (dannoNemico < 0) dannoNemico = 0;
+
+                energia -= dannoNemico;
+
+                System.out.println(nomeNemico + " infligge " + dannoNemico + " danni!");
+            }
+
+            System.out.println("Energia tua: " + energia +
                                " | Energia nemico: " + energiaNemico);
         }
 
