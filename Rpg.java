@@ -5,6 +5,13 @@ public class Main {
 
     static String[] inventario = new String[4];
     static Random rand = new Random();
+    
+    // ===== MAPPA =====
+    static final int RIGHE = 10;
+    static final int COLONNE = 10;
+    static String[][] mappa = new String[RIGHE][COLONNE];
+    static int posizionePG_X = 0;
+    static int posizionePG_Y = 0;
 
     public static void main(String[] args) {
 
@@ -56,6 +63,8 @@ public class Main {
         inizializzaInventario(classe);
         ordinaInventario();
         energia = maxEnergia;
+        
+        inizializzaMappa();
 
         System.out.println("\n===== STATISTICHE =====");
         System.out.println("Nome: " + name);
@@ -71,30 +80,22 @@ public class Main {
         boolean esci = false;
         while (!esci) {
             System.out.println("\n===== MENU =====");
-            System.out.println("1) Esplora la foresta");
-            System.out.println("2) Combatti un nemico");
-            System.out.println("3) Mostra inventario");
-            System.out.println("4) Esci dal gioco");
-            System.out.print("Scelta (1-4): ");
+            System.out.println("1) Esplora la mappa");
+            System.out.println("2) Mostra inventario");
+            System.out.println("3) Esci dal gioco");
+            System.out.print("Scelta (1-3): ");
             String sceltaMenu = in.nextLine().trim();
 
             switch (sceltaMenu) {
                 case "1":
-                    boolean missioneCompletata = missioneEsplorazione(in);
-                    if (missioneCompletata) {
-                        System.out.println("Hai trovato almeno un oggetto durante l'esplorazione!");
-                    } else {
-                        System.out.println("Non hai trovato nulla di utile.");
-                    }
-                    ordinaInventario();
+                    stampaMappa();
+                    System.out.println("\nComandi: W(su) S(giu) A(sinistra) D(destra) E(esci dalla mappa)");
+                    esploraMappa(in, name, energia, att, def, velocita);
                     break;
                 case "2":
-                    combattiNemico(name, energia, att, def, velocita);
-                    break;
-                case "3":
                     stampaInventario();
                     break;
-                case "4":
+                case "3":
                     System.out.println("Grazie per aver giocato!");
                     esci = true;
                     break;
@@ -105,6 +106,105 @@ public class Main {
         }
 
         in.close();
+    }
+
+    // ===== MAPPA =====
+    
+    public static void inizializzaMappa() {
+        // Inizializza mappa vuota
+        for (int i = 0; i < RIGHE; i++) {
+            for (int j = 0; j < COLONNE; j++) {
+                mappa[i][j] = ".";
+            }
+        }
+        
+        // Posiziona il giocatore
+        mappa[posizionePG_Y][posizionePG_X] = "P";
+        
+        // Posiziona nemici casuali (5 nemici)
+        int nemiciPositi = 0;
+        while (nemiciPositi < 5) {
+            int x = rand.nextInt(COLONNE);
+            int y = rand.nextInt(RIGHE);
+            
+            if (mappa[y][x].equals(".")) {
+                mappa[y][x] = "N";
+                nemiciPositi++;
+            }
+        }
+    }
+    
+    public static void stampaMappa() {
+        System.out.println("\n===== MAPPA " + RIGHE + "x" + COLONNE + " =====");
+        
+        // Stampa numeri colonne
+        System.out.print("  ");
+        for (int j = 0; j < COLONNE; j++) {
+            System.out.print(j + " ");
+        }
+        System.out.println();
+        
+        // Stampa mappa con numeri righe
+        for (int i = 0; i < RIGHE; i++) {
+            System.out.print(i + " ");
+            for (int j = 0; j < COLONNE; j++) {
+                System.out.print(mappa[i][j] + " ");
+            }
+            System.out.println();
+        }
+        System.out.println("P = Tu | N = Nemico | . = Vuoto");
+    }
+    
+    public static void esploraMappa(Scanner in, String name, int energia, int att, int def, int velocita) {
+        boolean esciMappa = false;
+        
+        while (!esciMappa && energia > 0) {
+            System.out.print("\nMossa (W/S/A/D/E): ");
+            String mossa = in.nextLine().trim().toUpperCase();
+            
+            int nuovoX = posizionePG_X;
+            int nuovoY = posizionePG_Y;
+            
+            switch (mossa) {
+                case "W": // Su
+                    nuovoY = Math.max(0, posizionePG_Y - 1);
+                    break;
+                case "S": // Giu
+                    nuovoY = Math.min(RIGHE - 1, posizionePG_Y + 1);
+                    break;
+                case "A": // Sinistra
+                    nuovoX = Math.max(0, posizionePG_X - 1);
+                    break;
+                case "D": // Destra
+                    nuovoX = Math.min(COLONNE - 1, posizionePG_X + 1);
+                    break;
+                case "E": // Esci
+                    esciMappa = true;
+                    System.out.println("Esci dalla mappa.");
+                    break;
+                default:
+                    System.out.println("Comando non valido!");
+                    continue;
+            }
+            
+            if (!mossa.equals("E")) {
+                // Controlla se c'è un nemico
+                if (mappa[nuovoY][nuovoX].equals("N")) {
+                    System.out.println("Hai incontrato un nemico!");
+                    combattiNemico(name, energia, att, def, velocita);
+                    // Rimuovi nemico dalla mappa
+                    mappa[nuovoY][nuovoX] = ".";
+                } else if (mappa[nuovoY][nuovoX].equals(".")) {
+                    // Sposta il giocatore
+                    mappa[posizionePG_Y][posizionePG_X] = ".";
+                    posizionePG_X = nuovoX;
+                    posizionePG_Y = nuovoY;
+                    mappa[posizionePG_Y][posizionePG_X] = "P";
+                }
+                
+                stampaMappa();
+            }
+        }
     }
 
     // ===== INVENTARIO =====
@@ -164,42 +264,6 @@ public class Main {
                     inventario[j] = temp;
                 }
             }
-        }
-    }
-
-    // ===== ESPLORAZIONE =====
-
-    public static boolean missioneEsplorazione(Scanner in) {
-        boolean missioneCompletata = false;
-
-        System.out.println("Ti addentri nella foresta...");
-        int evento = rand.nextInt(3);
-
-        switch (evento) {
-            case 0:
-                String oggetto = generaOggettoRandom();
-                System.out.println("Hai trovato un oggetto: " + oggetto);
-                aggiungiInventario(oggetto);
-                missioneCompletata = true;
-                break;
-            case 1:
-                System.out.println("Non trovi nulla...");
-                break;
-            case 2:
-                System.out.println("Un pericolo ti spaventa e torni indietro!");
-                break;
-        }
-
-        return missioneCompletata;
-    }
-
-    public static String generaOggettoRandom() {
-        switch (rand.nextInt(4)) {
-            case 0: return "Pozione 10";
-            case 1: return "Pozione 20";
-            case 2: return "Elisir";
-            case 3: return "Chiave misteriosa";
-            default: return "Oggetto sconosciuto";
         }
     }
 
