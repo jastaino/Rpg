@@ -12,6 +12,11 @@ public class Main {
     static String[][] mappa = new String[RIGHE][COLONNE];
     static int posizionePG_X = 0;
     static int posizionePG_Y = 0;
+    
+    // ===== OGGETTI =====
+    static String[] tipiOggetti = {"Pozione", "Oro", "Cristallo", "Chiave"};
+    static int[][] posizioniOggetti = new int[10][2]; // Max 10 oggetti
+    static int numOggetti = 0;
 
     public static void main(String[] args) {
 
@@ -89,8 +94,7 @@ public class Main {
             switch (sceltaMenu) {
                 case "1":
                     stampaMappa();
-                    System.out.println("\nComandi: W(su) S(giu) A(sinistra) D(destra) E(esci dalla mappa)");
-                    esploraMappa(in, name, energia, att, def, velocita);
+                    esploraMappa(name, energia, att, def, velocita);
                     break;
                 case "2":
                     stampaInventario();
@@ -118,18 +122,44 @@ public class Main {
             }
         }
         
-        // Posiziona il giocatore
+        // Posiziona il giocatore in posizione casuale
+        int x = rand.nextInt(COLONNE);
+        int y = rand.nextInt(RIGHE);
+        
+        while (!mappa[y][x].equals(".")) {
+            x = rand.nextInt(COLONNE);
+            y = rand.nextInt(RIGHE);
+        }
+        
+        posizionePG_X = x;
+        posizionePG_Y = y;
         mappa[posizionePG_Y][posizionePG_X] = "P";
         
         // Posiziona nemici casuali (5 nemici)
         int nemiciPositi = 0;
         while (nemiciPositi < 5) {
-            int x = rand.nextInt(COLONNE);
-            int y = rand.nextInt(RIGHE);
+            x = rand.nextInt(COLONNE);
+            y = rand.nextInt(RIGHE);
             
             if (mappa[y][x].equals(".")) {
                 mappa[y][x] = "N";
                 nemiciPositi++;
+            }
+        }
+        
+        // Posiziona oggetti casuali (6 oggetti)
+        numOggetti = 0;
+        int oggettiPositi = 0;
+        while (oggettiPositi < 6 && numOggetti < 10) {
+            x = rand.nextInt(COLONNE);
+            y = rand.nextInt(RIGHE);
+            
+            if (mappa[y][x].equals(".")) {
+                mappa[y][x] = "O";
+                posizioniOggetti[numOggetti][0] = y;
+                posizioniOggetti[numOggetti][1] = x;
+                numOggetti++;
+                oggettiPositi++;
             }
         }
     }
@@ -152,57 +182,66 @@ public class Main {
             }
             System.out.println();
         }
-        System.out.println("P = Tu | N = Nemico | . = Vuoto");
+        System.out.println("P = Tu | N = Nemico | O = Oggetto | . = Vuoto");
     }
     
-    public static void esploraMappa(Scanner in, String name, int energia, int att, int def, int velocita) {
-        boolean esciMappa = false;
+    public static void esploraMappa(String name, int energia, int att, int def, int velocita) {
+        // Posiziona il giocatore in una posizione casuale
+        int nuovoX = rand.nextInt(COLONNE);
+        int nuovoY = rand.nextInt(RIGHE);
         
-        while (!esciMappa && energia > 0) {
-            System.out.print("\nMossa (W/S/A/D/E): ");
-            String mossa = in.nextLine().trim().toUpperCase();
-            
-            int nuovoX = posizionePG_X;
-            int nuovoY = posizionePG_Y;
-            
-            switch (mossa) {
-                case "W": // Su
-                    nuovoY = Math.max(0, posizionePG_Y - 1);
-                    break;
-                case "S": // Giu
-                    nuovoY = Math.min(RIGHE - 1, posizionePG_Y + 1);
-                    break;
-                case "A": // Sinistra
-                    nuovoX = Math.max(0, posizionePG_X - 1);
-                    break;
-                case "D": // Destra
-                    nuovoX = Math.min(COLONNE - 1, posizionePG_X + 1);
-                    break;
-                case "E": // Esci
-                    esciMappa = true;
-                    System.out.println("Esci dalla mappa.");
-                    break;
-                default:
-                    System.out.println("Comando non valido!");
-                    continue;
-            }
-            
-            if (!mossa.equals("E")) {
-                // Controlla se c'è un nemico
-                if (mappa[nuovoY][nuovoX].equals("N")) {
-                    System.out.println("Hai incontrato un nemico!");
-                    combattiNemico(name, energia, att, def, velocita);
-                    // Rimuovi nemico dalla mappa
-                    mappa[nuovoY][nuovoX] = ".";
-                } else if (mappa[nuovoY][nuovoX].equals(".")) {
-                    // Sposta il giocatore
-                    mappa[posizionePG_Y][posizionePG_X] = ".";
-                    posizionePG_X = nuovoX;
-                    posizionePG_Y = nuovoY;
-                    mappa[posizionePG_Y][posizionePG_X] = "P";
+        // Assicurati che il giocatore non sia dove c'è un nemico
+        while (!mappa[nuovoY][nuovoX].equals(".")) {
+            nuovoX = rand.nextInt(COLONNE);
+            nuovoY = rand.nextInt(RIGHE);
+        }
+        
+        // Rimuovi il giocatore dalla posizione precedente
+        mappa[posizionePG_Y][posizionePG_X] = ".";
+        
+        // Sposta il giocatore
+        posizionePG_X = nuovoX;
+        posizionePG_Y = nuovoY;
+        mappa[posizionePG_Y][posizionePG_X] = "P";
+        
+        stampaMappa();
+        
+        // Controlla se il giocatore incontra un nemico adiacente
+        for (int i = 0; i < RIGHE; i++) {
+            for (int j = 0; j < COLONNE; j++) {
+                if (mappa[i][j].equals("N")) {
+                    // Verifica se il nemico è adiacente al giocatore
+                    int distanzaX = Math.abs(i - posizionePG_Y);
+                    int distanzaY = Math.abs(j - posizionePG_X);
+                    
+                    if ((distanzaX == 1 && distanzaY == 0) || (distanzaX == 0 && distanzaY == 1)) {
+                        System.out.println("Hai incontrato un nemico!");
+                        combattiNemico(name, energia, att, def, velocita);
+                        mappa[i][j] = ".";
+                        break;
+                    }
                 }
+            }
+        }
+        
+        // Controlla se il giocatore incontra un oggetto adiacente
+        for (int i = 0; i < numOggetti; i++) {
+            int oggY = posizioniOggetti[i][0];
+            int oggX = posizioniOggetti[i][1];
+            
+            if (mappa[oggY][oggX].equals("O")) {
+                int distanzaX = Math.abs(oggY - posizionePG_Y);
+                int distanzaY = Math.abs(oggX - posizionePG_X);
                 
-                stampaMappa();
+                if ((distanzaX == 1 && distanzaY == 0) || (distanzaX == 0 && distanzaY == 1)) {
+                    String oggetto = tipiOggetti[rand.nextInt(tipiOggetti.length)];
+                    System.out.println("Hai trovato un " + oggetto + "!");
+                    aggiungiInventario(oggetto);
+                    mappa[oggY][oggX] = ".";
+                    posizioniOggetti[i][0] = -1;
+                    posizioniOggetti[i][1] = -1;
+                    break;
+                }
             }
         }
     }
@@ -244,6 +283,7 @@ public class Main {
             if (inventario[i] == null) {
                 inventario[i] = oggetto;
                 System.out.println(oggetto + " aggiunto all'inventario!");
+                ordinaInventario();
                 return;
             }
         }
