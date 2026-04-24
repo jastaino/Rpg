@@ -1,4 +1,4 @@
- import java.util.Scanner;
+import java.util.Scanner;
 import java.util.Random;
 
 public class Main {
@@ -25,7 +25,7 @@ public class Main {
         if (name.isEmpty()) name = "Eroe";
 
         String classe = "";
-        int maxEnergia = 0, energia = 0, att = 0, def = 0, velocita = 0;
+        int maxEnergia = 0, energia = 0, att = 0, def = 0, velocita = 0, mana = 0, resistenza = 0;
 
         while (true) {
             System.out.println("\nScegli la classe:");
@@ -40,6 +40,8 @@ public class Main {
                     att = 18;
                     def = 12;
                     velocita = 25;
+                    mana = 20;
+                    resistenza = 15;
                     break;
                 case "2":
                     classe = "Mago";
@@ -47,6 +49,8 @@ public class Main {
                     att = 6;
                     def = 6;
                     velocita = 30;
+                    mana = 100;
+                    resistenza = 5;
                     break;
                 case "3":
                     classe = "Ladro";
@@ -54,6 +58,8 @@ public class Main {
                     att = 12;
                     def = 8;
                     velocita = 35;
+                    mana = 40;
+                    resistenza = 8;
                     break;
                 default:
                     System.out.println("Scelta non valida, riprova.");
@@ -68,19 +74,21 @@ public class Main {
         
         inizializzaMappa();
 
-        System.out.println("\n===== STATISTICHE =====");
+        System.out.println("\n STATISTICHE ");
         System.out.println("Nome: " + name);
         System.out.println("Classe: " + classe);
         System.out.println("Energia: " + energia + " / " + maxEnergia);
         System.out.println("Attacco: " + att);
         System.out.println("Difesa: " + def);
         System.out.println("Velocità: " + velocita);
+        System.out.println("Mana: " + mana);
+        System.out.println("Resistenza: " + resistenza);
 
         stampaInventario();
 
         boolean esci = false;
         while (!esci) {
-            System.out.println("\n===== MENU =====");
+            System.out.println("\n MENU ");
             System.out.println("1) Esplora la mappa");
             System.out.println("2) Mostra inventario");
             System.out.println("3) Esci dal gioco");
@@ -155,7 +163,7 @@ public class Main {
     }
     
     public static void stampaMappa() {
-        System.out.println("\n===== MAPPA " + RIGHE + "x" + COLONNE + " =====");
+        System.out.println("\n MAPPA " + RIGHE + "x" + COLONNE + " ");
         
         System.out.print("  ");
         for (int j = 0; j < COLONNE; j++) {
@@ -178,12 +186,12 @@ public class Main {
         
         while (esplorazioneAttiva) {
             stampaMappa();
-            System.out.println("\nMuoviti con W/A/S/D (up/left/down/right) o Q per tornare al menu:");
+            System.out.println("\nMuoviti con W/A/S/D (su/giu/destra/sinistra) o 4 per tornare al menu:");
             String input = in.nextLine().toLowerCase().trim();
             
             switch (input) {
                 case "w":
-                case "up":
+                case "su":
                     if (posizionePG_Y > 0 && !mappa[posizionePG_Y - 1][posizionePG_X].equals("N")) {
                         mappa[posizionePG_Y][posizionePG_X] = ".";
                         posizionePG_Y--;
@@ -195,7 +203,7 @@ public class Main {
                     break;
                     
                 case "s":
-                case "down":
+                case "giu":
                     if (posizionePG_Y < RIGHE - 1 && !mappa[posizionePG_Y + 1][posizionePG_X].equals("N")) {
                         mappa[posizionePG_Y][posizionePG_X] = ".";
                         posizionePG_Y++;
@@ -207,7 +215,7 @@ public class Main {
                     break;
                     
                 case "a":
-                case "left":
+                case "sinistra":
                     if (posizionePG_X > 0 && !mappa[posizionePG_Y][posizionePG_X - 1].equals("N")) {
                         mappa[posizionePG_Y][posizionePG_X] = ".";
                         posizionePG_X--;
@@ -219,7 +227,7 @@ public class Main {
                     break;
                     
                 case "d":
-                case "right":
+                case "destra":
                     if (posizionePG_X < COLONNE - 1 && !mappa[posizionePG_Y][posizionePG_X + 1].equals("N")) {
                         mappa[posizionePG_Y][posizionePG_X] = ".";
                         posizionePG_X++;
@@ -230,7 +238,7 @@ public class Main {
                     }
                     break;
                     
-                case "q":
+                case "4":
                     esplorazioneAttiva = false;
                     break;
                     
@@ -272,6 +280,7 @@ public class Main {
                     mappa[oggY][oggX] = ".";
                     posizioniOggetti[i][0] = -1;
                     posizioniOggetti[i][1] = -1;
+                    stampaInventario();
                     return;
                 }
             }
@@ -301,7 +310,7 @@ public class Main {
     }
 
     public static void stampaInventario() {
-        System.out.println("\n===== INVENTARIO =====");
+        System.out.println("\n INVENTARIO ");
         for (String oggetto : inventario) {
             if (oggetto != null)
                 System.out.println("- " + oggetto);
@@ -351,11 +360,8 @@ public class Main {
                 statsNemico[0] = 100;
                 statsNemico[1] = 18;
                 return "Orco";
-            default:
-                statsNemico[0] = 50;
-                statsNemico[1] = 8;
-                return "Creatura misteriosa";
         }
+        return "Orco";
     }
 
     public static void combattiNemico(String name, int energia, int att, int def, int velocita) {
